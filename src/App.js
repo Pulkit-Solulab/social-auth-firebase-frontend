@@ -1,23 +1,76 @@
-import logo from './logo.svg';
 import './App.css';
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, FacebookAuthProvider, TwitterAuthProvider } from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import ListOfTodo from './components/ListOfTodo';
 
 function App() {
+  const [auth, setAuth] = useState(false);
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    onAuthStateChanged(getAuth(), userCred => {
+      console.log('authstatechanged')
+      if (userCred) {
+        setAuth(true);
+        userCred.getIdToken().then(token => {
+          setToken(token);
+        });
+      }
+      else setAuth(false);
+    });
+  }, []);
+
+  const logout = () => {
+    const auth = getAuth();
+    signOut(auth).then(() => {
+      console.log('signout')
+      // Sign-out successful.
+    }).catch((error) => {
+      console.log(error)
+      // An error happened.
+    });
+  }
+
+  const loginWithGoogle = () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider).then(res => {
+      if (res) setAuth(true);
+    }).catch(err => {
+      console.log(err)
+    });
+  }
+
+  const loginWithFacebook = () => {
+    const auth = getAuth();
+    const provider = new FacebookAuthProvider();
+    signInWithPopup(auth, provider).then(res => {
+      if (res) setAuth(true);
+    }).catch(err => {
+      console.log(err)
+    });
+  }
+
+  const loginWithTwitter = () => {
+    const auth = getAuth();
+    const provider = new TwitterAuthProvider();
+    signInWithPopup(auth, provider).then(res => {
+      if (res) setAuth(true);
+    }).catch(err => {
+      console.log(err)
+    });
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {auth ? <div>Loged In
+        <button onClick={logout}>LogOut</button>
+        <ListOfTodo token={token} />
+      </div> : <div>
+        <button onClick={loginWithGoogle}>Login Google</button>
+        <button onClick={loginWithFacebook}>Login Facebook</button>
+        <button onClick={loginWithTwitter}>Login Twitter</button>
+      </div>}
     </div>
   );
 }
